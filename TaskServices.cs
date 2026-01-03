@@ -11,6 +11,7 @@ namespace TaskList.Services
         private static string _mHomePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         private static string _mFolderPath = Path.Combine(_mHomePath, ".config", "tasklist");
         private static string _mFilePath = Path.Combine(_mFolderPath, "task.json");
+        private static string _mjsonRead = File.ReadAllText(_mFilePath);
         private string _defaultJsonContent = "[{}]";
         
         public void AddTask()
@@ -25,8 +26,7 @@ namespace TaskList.Services
             Console.WriteLine("Enter the Task Description: ");
             string mDescription = Console.ReadLine() ?? "No Description";
             
-            string oldJsonString = File.ReadAllText(_mFilePath);
-            List<TaskModel> oldJson = JsonConvert.DeserializeObject<List<TaskModel>>(oldJsonString) ?? new List<TaskModel>();
+            List<TaskModel> oldJson = JsonConvert.DeserializeObject<List<TaskModel>>(_mjsonRead) ?? new List<TaskModel>();
             oldJson.Add(new TaskModel
             {
                 Id = newUid,
@@ -39,6 +39,16 @@ namespace TaskList.Services
             string updatedJsonString = JsonConvert.SerializeObject(oldJson,  Formatting.Indented);
             Console.WriteLine(updatedJsonString);
             File.WriteAllText(_mFilePath, updatedJsonString);
+        }
+        
+        public string ReadTask()
+        {
+            if (!Directory.Exists(_mFolderPath)) Directory.CreateDirectory(_mFolderPath);
+            if (!File.Exists(_mFilePath)) File.WriteAllText(_mFilePath, _defaultJsonContent);
+            List<TaskModel> oldJson = JsonConvert.DeserializeObject<List<TaskModel>>(_mjsonRead) ?? new List<TaskModel>();
+            
+            string fullJsonRead = JsonConvert.SerializeObject(oldJson,  Formatting.Indented);
+            return fullJsonRead;
         }
     }
 }
